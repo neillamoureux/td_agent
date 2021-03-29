@@ -1,0 +1,91 @@
+version: "3.9"
+services:
+  agg_1:
+    container_name: td_agg_1
+    image: neil/td_agent
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - FLUENT_CONF=/etc/fluentd/matching/logs.conf
+      - TD_AGENT_OPTIONS="-vv"
+    volumes:
+      - ./etc/fluentd:/etc/fluentd
+      - ./cont/agg_1/td-agent:/mnt/td-agent/
+      - ${HOME}/.aws:/fluentd/.aws
+    command: ["/opt/td-agent/bin/fluentd"]
+
+  agg_2:
+    container_name: td_agg_2
+    image: neil/td_agent
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - FLUENT_CONF=/etc/fluentd/matching/logs.conf
+      - TD_AGENT_OPTIONS="-vv"
+    volumes:
+      - ./etc/fluentd:/etc/fluentd
+      - ./cont/agg_2/td-agent:/mnt/td-agent/
+      - ${HOME}/.aws:/fluentd/.aws
+    command: ["/opt/td-agent/bin/fluentd"]
+
+  fwd_1:
+    container_name: td_fwd_1
+    depends_on:
+      - agg_1
+      - agg_2
+    image: neil/td_agent
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - FLUENT_CONF=/etc/fluentd/matching/fwd.conf
+      - TD_AGENT_OPTIONS="-vv"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./etc/fluentd:/etc/fluentd
+      - ./cont/fwd_1/td-agent:/mnt/td-agent/
+      # - ${HOME}/.aws:/fluentd/.aws
+    command: ["/opt/td-agent/bin/fluentd"]
+
+  fwd_2:
+    container_name: td_fwd_2
+    depends_on:
+      - agg_1
+      - agg_2
+    image: neil/td_agent
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - FLUENT_CONF=/etc/fluentd/matching/fwd.conf
+      - TD_AGENT_OPTIONS="-vv"
+    ports:
+      - "8889:8888"
+    volumes:
+      - ./etc/fluentd:/etc/fluentd
+      - ./cont/fwd_2/td-agent:/mnt/td-agent/
+      # - ${HOME}/.aws:/fluentd/.aws
+    command: ["/opt/td-agent/bin/fluentd"]
+
+  fwd_3:
+    container_name: td_fwd_3
+    depends_on:
+      - agg_1
+      - agg_2
+    image: neil/td_agent
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - FLUENT_CONF=/etc/fluentd/matching/fwd.conf
+      - TD_AGENT_OPTIONS="-vv"
+    ports:
+      - "8890:8888"
+    volumes:
+      - ./etc/fluentd:/etc/fluentd
+      - ./cont/fwd_3/td-agent:/mnt/td-agent/
+      # - ${HOME}/.aws:/fluentd/.aws
+    command: ["/opt/td-agent/bin/fluentd"]
