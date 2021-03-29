@@ -71,13 +71,28 @@ def looper(ports):
         yield ports[port_idx]
         port_idx = (port_idx + 1) % len(ports)
 
+def post_for(log_type, repeat, hostname, ports):
+    for _ in range(repeat):
+        info = log_types.get(log_type)
+        post_logs(info["file_name"], hostname, ports, info["tag"])
+
+def post_all(repeat, hostname, ports):
+    for _ in range(repeat):
+        for log_type in log_types.keys():
+            post_for(log_type, 1, hostname, ports)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Post some logs")
     parser.add_argument('log_type', metavar="log-type", type=str, help="type of log")
+    parser.add_argument('--repeat', type=int, default=1, help="number of times to repeat in file")
     args = parser.parse_args()
-    if args.log_type not in log_types:
-        print(f"Use a valid log type: {', '.join([lt for lt in log_types])}")
-        quit()
-    info = log_types.get(args.log_type)
-
-    post_logs(info["file_name"], hostname, ports, info["tag"])
+    types = []
+    if args.log_type == "all":
+        post_all(args.repeat, hostname, ports)
+    else:
+        if args.log_type not in log_types:
+            print("Post 'all' or")
+            print(f"Use a valid log type: {', '.join([lt for lt in log_types])}")
+            quit()
+        else:
+            post_for(args.log_type, args.repeat, hostname, ports)
